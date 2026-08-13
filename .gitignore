@@ -1,2 +1,7 @@
 .vscode/
 plans/
+
+# vite / node
+/node_modules
+/dist/
+*.local

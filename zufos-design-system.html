@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZUF.OS — Design System v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=VT323&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════
+   ZUF.OS — TOKENS
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  /* — superfícies — */
+  --vazio:         #160E24;   /* céu noturno · canvas da página        */
+  --nebula:        #241635;   /* superfície elevada · fundo de seção   */
+  --breu:          #0C0813;   /* preto-gato · sombras e texto em chrome*/
+
+  /* — chrome Y2K (bisel de janela, 3 tons obrigatórios) — */
+  --chrome-luz:    #EFE6FA;   /* luz  · borda superior-esquerda        */
+  --chrome-face:   #B9A5D3;   /* face · corpo da janela                */
+  --chrome-sombra: #6E5C87;   /* sombra · borda inferior-direita       */
+
+  /* — acentos — */
+  --fosforo:       #8CE87C;   /* CRT e lua · ação primária             */
+  --ametista:      #C08BF5;   /* cristais · destaque secundário        */
+  --vela:          #FFD98A;   /* chama · alerta, uso raro              */
+
+  /* — texto — */
+  --osso:          #EDE7F5;   /* texto sobre fundo escuro              */
+  --bruma:         #A697BE;   /* texto secundário                      */
+
+  /* — malha — */
+  --u: 8px;                    /* unidade base                          */
+  --raio: 0;                   /* NUNCA arredondar chrome               */
+}
+
+/* bisel externo (botão/janela em repouso) */
+.bisel{
+  background: var(--chrome-face);
+  box-shadow:
+    inset  1px  1px 0 0 var(--chrome-luz),
+    inset -1px -1px 0 0 var(--breu),
+    inset  2px  2px 0 0 #D6C7EA,
+    inset -2px -2px 0 0 var(--chrome-sombra);
+}
+/* bisel interno (campo/tela/pressionado) */
+.bisel-in{
+  background: var(--nebula);
+  box-shadow:
+    inset  1px  1px 0 0 var(--breu),
+    inset -1px -1px 0 0 var(--chrome-luz),
+    inset  2px  2px 0 0 var(--chrome-sombra),
+    inset -2px -2px 0 0 #D6C7EA;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BASE
+   ══════════════════════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--vazio);
+  color:var(--osso);
+  font:400 16px/1.7 "IBM Plex Sans",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:56px;
+}
+/* céu estrelado — fixo, atrás de tudo */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-2;
+  background:
+    radial-gradient(1px 1px at 24px 38px,  #EDE7F5, transparent),
+    radial-gradient(1px 1px at 132px 92px, #C08BF5, transparent),
+    radial-gradient(1px 1px at 78px 156px, #EDE7F5, transparent),
+    radial-gradient(2px 2px at 190px 46px, #EDE7F5, transparent),
+    radial-gradient(1px 1px at 168px 178px,#8CE87C, transparent),
+    radial-gradient(1px 1px at 44px 118px, #A697BE, transparent),
+    linear-gradient(180deg,#2A1A3F 0%, #160E24 60%, #120B1D 100%);
+  background-size:220px 220px,220px 220px,220px 220px,220px 220px,220px 220px,220px 220px,100% 100%;
+}
+img,svg{display:block}
+.pixel{image-rendering:pixelated;image-rendering:crisp-edges}
+
+/* ══════════════════════════════════════════════════════════════
+   TIPOGRAFIA
+   ══════════════════════════════════════════════════════════════ */
+.t-hero   {font:700 clamp(28px,6.4vw,56px)/1.15 "Silkscreen",monospace;letter-spacing:0}
+.t-secao  {font:700 24px/1.3 "Silkscreen",monospace}
+.t-card   {font:700 16px/1.4 "Silkscreen",monospace}
+.t-barra  {font:400 12px/1 "Silkscreen",monospace;letter-spacing:.04em}
+.t-etiq   {font:400 10px/1 "Silkscreen",monospace;letter-spacing:.08em;text-transform:uppercase}
+.t-crt    {font:400 clamp(17px,2.3vw,26px)/1.45 "VT323",monospace;letter-spacing:.02em}
+.t-corpo  {font:400 16px/1.7 "IBM Plex Sans",sans-serif}
+.t-mini   {font:400 13px/1.6 "IBM Plex Sans",sans-serif}
+
+/* caminho DOS usado como sobrelinha de seção */
+.caminho{
+  font:400 10px/1 "Silkscreen",monospace;letter-spacing:.1em;
+  color:var(--fosforo);text-transform:uppercase;
+  display:inline-block;margin-bottom:12px;
+}
+.caminho::before{content:"C:\\ZUF\\"}
+
+/* ══════════════════════════════════════════════════════════════
+   LAYOUT
+   ══════════════════════════════════════════════════════════════ */
+.pagina{max-width:1080px;margin:0 auto;padding:0 16px}
+.secao{margin:64px 0}
+.grade{display:grid;gap:16px}
+@media(min-width:720px){
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COMPONENTE · JANELA
+   ══════════════════════════════════════════════════════════════ */
+.janela{
+  background:var(--chrome-face);
+  box-shadow:
+    inset  1px  1px 0 0 var(--chrome-luz),
+    inset -1px -1px 0 0 var(--breu),
+    inset  2px  2px 0 0 #D6C7EA,
+    inset -2px -2px 0 0 var(--chrome-sombra),
+    4px 4px 0 0 rgba(12,8,19,.55);   /* sombra dura, nunca desfocada */
+  border-radius:var(--raio);
+  padding:3px;
+}
+.janela__barra{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(90deg,var(--breu) 0%,#4A2E6B 55%,var(--ametista) 100%);
+  color:var(--osso);
+  padding:5px 5px 5px 8px;
+  min-height:26px;
+}
+.janela__barra--inativa{background:linear-gradient(90deg,#3A3145 0%,#6E5C87 100%)}
+.janela__titulo{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.janela__botoes{display:flex;gap:2px;flex-shrink:0}
+.btn-barra{
+  width:18px;height:16px;border:0;cursor:pointer;
+  background:var(--chrome-face);
+  box-shadow:inset 1px 1px 0 0 var(--chrome-luz),inset -1px -1px 0 0 var(--breu);
+  font:400 9px/1 "Silkscreen",monospace;color:var(--breu);
+  display:grid;place-items:center;
+}
+.btn-barra:active{box-shadow:inset 1px 1px 0 0 var(--breu),inset -1px -1px 0 0 var(--chrome-luz)}
+.janela__corpo{padding:16px;color:var(--breu)}
+.janela__corpo--escuro{background:var(--nebula);color:var(--osso);margin:3px 0 0}
+
+/* ══════════════════════════════════════════════════════════════
+   COMPONENTE · BOTÃO
+   ══════════════════════════════════════════════════════════════ */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  font:400 12px/1 "Silkscreen",monospace;
+  color:var(--breu);background:var(--chrome-face);
+  border:0;border-radius:var(--raio);
+  padding:11px 18px;cursor:pointer;text-decoration:none;
+  box-shadow:
+    inset  1px  1px 0 0 var(--chrome-luz),
+    inset -1px -1px 0 0 var(--breu),
+    inset  2px  2px 0 0 #D6C7EA,
+    inset -2px -2px 0 0 var(--chrome-sombra);
+}
+.btn:hover{background:#C6B4DC}
+.btn:active{
+  padding:12px 17px 10px 19px;
+  box-shadow:
+    inset  1px  1px 0 0 var(--breu),
+    inset -1px -1px 0 0 var(--chrome-luz),
+    inset  2px  2px 0 0 var(--chrome-sombra),
+    inset -2px -2px 0 0 #D6C7EA;
+}
+.btn--primario{background:var(--fosforo);color:var(--breu)}
+.btn--primario:hover{background:#A2F095}
+.btn--fantasma{
+  background:transparent;color:var(--fosforo);
+  box-shadow:inset 0 0 0 2px var(--fosforo);
+}
+.btn--fantasma:hover{background:rgba(140,232,124,.12)}
+/* foco: pontilhado — herança legítima do Win98 e acessível */
+:where(a,button,input,textarea,[tabindex]):focus-visible{
+  outline:2px dotted var(--fosforo);outline-offset:2px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COMPONENTE · ETIQUETA (skills / stack)
+   ══════════════════════════════════════════════════════════════ */
+.etiq{
+  display:inline-block;
+  font:400 10px/1 "Silkscreen",monospace;letter-spacing:.06em;
+  color:var(--osso);background:rgba(192,139,245,.14);
+  padding:7px 9px;margin:0 4px 4px 0;
+  box-shadow:inset 0 0 0 1px var(--ametista);
+}
+.etiq--fosforo{color:var(--fosforo);background:rgba(140,232,124,.1);box-shadow:inset 0 0 0 1px var(--fosforo)}
+
+/* ══════════════════════════════════════════════════════════════
+   COMPONENTE · TELA CRT  ★ assinatura
+   ══════════════════════════════════════════════════════════════ */
+.crt{
+  position:relative;overflow:hidden;
+  background:#0A1A0C;
+  padding:20px 18px;
+  box-shadow:
+    inset  1px  1px 0 0 var(--breu),
+    inset -1px -1px 0 0 var(--chrome-luz),
+    inset  2px  2px 0 0 var(--chrome-sombra),
+    inset 0 0 60px 8px rgba(140,232,124,.12);
+}
+.crt::after{ /* varredura */
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(0,0,0,.30) 0 1px,transparent 1px 3px);
+}
+.crt__linha{
+  color:var(--fosforo);
+  text-shadow:0 0 7px rgba(140,232,124,.55);  /* único brilho suave permitido */
+  margin:0;
+}
+.crt__linha::before{content:"> ";opacity:.7}
+.cursor{
+  display:inline-block;width:.55em;height:1em;
+  background:var(--fosforo);vertical-align:-.12em;margin-left:2px;
+  animation:pisca 1.06s steps(1) infinite;
+}
+@keyframes pisca{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+
+/* ══════════════════════════════════════════════════════════════
+   COMPONENTE · ÍCONE DE ÁREA DE TRABALHO (navegação)
+   ══════════════════════════════════════════════════════════════ */
+.icone{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  width:84px;padding:8px 4px;text-decoration:none;color:var(--osso);
+  background:transparent;
+}
+.icone:hover{background:rgba(192,139,245,.18)}
+.icone svg{width:40px;height:40px}
+.icone__rot{
+  font:400 10px/1.3 "Silkscreen",monospace;text-align:center;
+  text-shadow:1px 1px 0 var(--breu);
+}
+.icone:hover .icone__rot{background:var(--ametista);color:var(--breu);text-shadow:none}
+
+/* ══════════════════════════════════════════════════════════════
+   COMPONENTE · CAIXA DE DIÁLOGO
+   ══════════════════════════════════════════════════════════════ */
+.dialogo{max-width:420px}
+.dialogo__conteudo{display:flex;gap:14px;padding:18px 16px}
+.dialogo__acoes{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
+
+/* ══════════════════════════════════════════════════════════════
+   COMPONENTE · BARRA DE PROGRESSO (nível de skill)
+   ══════════════════════════════════════════════════════════════ */
+.progresso{height:20px;padding:3px;display:flex;gap:2px}
+.progresso i{width:10px;background:var(--fosforo);flex-shrink:0}
+.progresso i.vazio{background:var(--chrome-sombra);opacity:.35}
+
+/* ══════════════════════════════════════════════════════════════
+   COMPONENTE · BARRA DE TAREFAS
+   ══════════════════════════════════════════════════════════════ */
+.tarefas{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  display:flex;align-items:center;gap:8px;
+  padding:4px 8px;
+  background:var(--chrome-face);
+  box-shadow:inset 0 2px 0 0 var(--chrome-luz),0 -2px 0 0 var(--breu);
+}
+.tarefas__relogio{
+  margin-left:auto;padding:6px 10px;
+  font:400 11px/1 "Silkscreen",monospace;color:var(--breu);
+  box-shadow:inset 1px 1px 0 0 var(--chrome-sombra),inset -1px -1px 0 0 var(--chrome-luz);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AMOSTRAS DE COR
+   ══════════════════════════════════════════════════════════════ */
+.amostra{padding:3px;background:var(--chrome-face);
+  box-shadow:inset 1px 1px 0 0 var(--chrome-luz),inset -1px -1px 0 0 var(--breu)}
+.amostra__cor{height:72px;box-shadow:inset 0 0 0 1px rgba(12,8,19,.4)}
+.amostra__meta{padding:8px;color:var(--breu)}
+.amostra__nome{font:400 10px/1.2 "Silkscreen",monospace;display:block}
+.amostra__hex{font:500 12px/1.6 "IBM Plex Sans",sans-serif;letter-spacing:.03em}
+.amostra__uso{font:400 11px/1.4 "IBM Plex Sans",sans-serif;opacity:.75;display:block;margin-top:2px}
+
+/* utilitários */
+.pilha>*+*{margin-top:12px}
+.pilha-g>*+*{margin-top:24px}
+.centro{text-align:center}
+.fosforo{color:var(--fosforo)}
+.ametista{color:var(--ametista)}
+.bruma{color:var(--bruma)}
+.linha-h{height:2px;background:var(--chrome-sombra);opacity:.4;margin:0}
+.nota{
+  border-left:3px solid var(--vela);padding-left:12px;
+  font:400 13px/1.6 "IBM Plex Sans",sans-serif;color:var(--bruma);
+}
+code{font:500 13px/1.5 "VT323",monospace;font-size:15px;color:var(--fosforo);background:rgba(140,232,124,.1);padding:1px 5px}
+.bloco-codigo{
+  background:var(--breu);color:var(--osso);padding:16px;overflow-x:auto;
+  font:400 15px/1.55 "VT323",monospace;white-space:pre;
+  box-shadow:inset 1px 1px 0 0 var(--chrome-sombra);
+}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ CABEÇALHO / BOOT ═══════════ -->
+<header class="pagina" style="padding-top:40px">
+  <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:24px">
+    <!-- lua em pixel -->
+    <svg class="pixel" viewBox="0 0 16 16" width="56" height="56" shape-rendering="crispEdges" aria-hidden="true">
+      <g fill="#8CE87C">
+        <rect x="6" y="0" width="4" height="1"/><rect x="4" y="1" width="5" height="1"/>
+        <rect x="3" y="2" width="5" height="1"/><rect x="2" y="3" width="5" height="1"/>
+        <rect x="1" y="4" width="5" height="1"/><rect x="1" y="5" width="5" height="1"/>
+        <rect x="0" y="6" width="5" height="1"/><rect x="0" y="7" width="5" height="1"/>
+        <rect x="0" y="8" width="5" height="1"/><rect x="0" y="9" width="5" height="1"/>
+        <rect x="1" y="10" width="5" height="1"/><rect x="1" y="11" width="5" height="1"/>
+        <rect x="2" y="12" width="5" height="1"/><rect x="3" y="13" width="5" height="1"/>
+        <rect x="4" y="14" width="5" height="1"/><rect x="6" y="15" width="4" height="1"/>
+      </g>
+      <g fill="#C3F0B4" opacity=".55">
+        <rect x="1" y="6" width="2" height="2"/><rect x="2" y="10" width="2" height="1"/>
+      </g>
+    </svg>
+    <div>
+      <p class="t-etiq fosforo" style="margin-bottom:8px">Proposta de identidade visual</p>
+      <h1 class="t-hero">ZUF.OS</h1>
+      <p class="t-corpo bruma" style="margin-top:8px">Design system para o portfólio de Miguel Zufelatto — v1.0</p>
+    </div>
+  </div>
+
+  <div class="janela">
+    <div class="janela__barra">
+      <span class="t-barra janela__titulo">leia-me.txt</span>
+      <span class="janela__botoes"><button class="btn-barra" aria-label="Minimizar">_</button><button class="btn-barra" aria-label="Maximizar">□</button><button class="btn-barra" aria-label="Fechar">×</button></span>
+    </div>
+    <div class="janela__corpo">
+      <p class="t-corpo"><strong>A tese.</strong> O portfólio deixa de ser uma página com seções e passa a ser um <strong>sistema operacional</strong> — o desktop de quem programa de madrugada. Cada seção do site atual vira uma janela; a navegação vira ícones de área de trabalho; o hero vira um monitor CRT ligando.</p>
+      <p class="t-corpo" style="margin-top:12px">Isso não é decoração: a metáfora carrega informação. Um portfólio de engenheiro de software apresentado como um ambiente de trabalho diz o que a pessoa faz antes de qualquer texto. As referências místicas das imagens entram como <em>atmosfera</em> — céu, lua, cristais, gato — nunca substituindo o conteúdo técnico por bruxaria genérica.</p>
+      <p class="nota" style="margin-top:16px">Regra de ouro do sistema: <strong>zero border-radius</strong> em chrome e <strong>zero sombra desfocada</strong>. Pixel art não tem antialiasing. A única exceção é o brilho de fósforo do CRT.</p>
+    </div>
+  </div>
+</header>
+
+<main class="pagina">
+
+<!-- ═══════════ PALETA ═══════════ -->
+<section class="secao" id="paleta">
+  <p class="caminho">PALETA.SYS</p>
+  <h2 class="t-secao">Paleta</h2>
+  <p class="t-corpo bruma" style="max-width:60ch;margin-top:8px">Dez tokens em quatro famílias. As imagens têm dois protagonistas — o roxo da noite e o verde do fósforo — e um coadjuvante de chrome lilás que é o que faz a coisa parecer um computador de 1999 e não um pôster.</p>
+
+  <h3 class="t-card" style="margin:32px 0 12px">Superfícies</h3>
+  <div class="grade g3">
+    <div class="amostra"><div class="amostra__cor" style="background:#160E24"></div><div class="amostra__meta"><span class="amostra__nome">--vazio</span><span class="amostra__hex">#160E24</span><span class="amostra__uso">Céu noturno. Fundo da página.</span></div></div>
+    <div class="amostra"><div class="amostra__cor" style="background:#241635"></div><div class="amostra__meta"><span class="amostra__nome">--nebula</span><span class="amostra__hex">#241635</span><span class="amostra__uso">Superfície elevada, campos, telas.</span></div></div>
+    <div class="amostra"><div class="amostra__cor" style="background:#0C0813"></div><div class="amostra__meta"><span class="amostra__nome">--breu</span><span class="amostra__hex">#0C0813</span><span class="amostra__uso">Preto-gato. Sombras duras e texto sobre chrome.</span></div></div>
+  </div>
+
+  <h3 class="t-card" style="margin:32px 0 12px">Chrome — os três tons do bisel</h3>
+  <div class="grade g3">
+    <div class="amostra"><div class="amostra__cor" style="background:#EFE6FA"></div><div class="amostra__meta"><span class="amostra__nome">--chrome-luz</span><span class="amostra__hex">#EFE6FA</span><span class="amostra__uso">Borda superior-esquerda.</span></div></div>
+    <div class="amostra"><div class="amostra__cor" style="background:#B9A5D3"></div><div class="amostra__meta"><span class="amostra__nome">--chrome-face</span><span class="amostra__hex">#B9A5D3</span><span class="amostra__uso">Corpo da janela e dos botões.</span></div></div>
+    <div class="amostra"><div class="amostra__cor" style="background:#6E5C87"></div><div class="amostra__meta"><span class="amostra__nome">--chrome-sombra</span><span class="amostra__hex">#6E5C87</span><span class="amostra__uso">Borda inferior-direita.</span></div></div>
+  </div>
+
+  <h3 class="t-card" style="margin:32px 0 12px">Acentos</h3>
+  <div class="grade g3">
+    <div class="amostra"><div class="amostra__cor" style="background:#8CE87C"></div><div class="amostra__meta"><span class="amostra__nome">--fosforo</span><span class="amostra__hex">#8CE87C</span><span class="amostra__uso">CRT e lua. Ação primária, links, foco.</span></div></div>
+    <div class="amostra"><div class="amostra__cor" style="background:#C08BF5"></div><div class="amostra__meta"><span class="amostra__nome">--ametista</span><span class="amostra__hex">#C08BF5</span><span class="amostra__uso">Cristais. Barra de título ativa, etiquetas.</span></div></div>
+    <div class="amostra"><div class="amostra__cor" style="background:#FFD98A"></div><div class="amostra__meta"><span class="amostra__nome">--vela</span><span class="amostra__hex">#FFD98A</span><span class="amostra__uso">Chama. Só para avisos. Use pouco.</span></div></div>
+  </div>
+
+  <h3 class="t-card" style="margin:32px 0 12px">Texto</h3>
+  <div class="grade g2">
+    <div class="amostra"><div class="amostra__cor" style="background:#EDE7F5"></div><div class="amostra__meta"><span class="amostra__nome">--osso</span><span class="amostra__hex">#EDE7F5</span><span class="amostra__uso">Texto sobre fundo escuro. Contraste 13.2:1 no --vazio.</span></div></div>
+    <div class="amostra"><div class="amostra__cor" style="background:#A697BE"></div><div class="amostra__meta"><span class="amostra__nome">--bruma</span><span class="amostra__hex">#A697BE</span><span class="amostra__uso">Texto secundário. Contraste 6.1:1. Nunca abaixo de 14px.</span></div></div>
+  </div>
+</section>
+
+<hr class="linha-h">
+
+<!-- ═══════════ TIPOGRAFIA ═══════════ -->
+<section class="secao" id="tipos">
+  <p class="caminho">TIPOS.FON</p>
+  <h2 class="t-secao">Tipografia</h2>
+  <p class="t-corpo bruma" style="max-width:60ch;margin-top:8px">Três fontes, três funções distintas. A regra que segura tudo: <strong>fonte pixel nunca em parágrafo</strong>. Silkscreen manda em títulos e rótulos, VT323 vive só dentro do CRT, e o texto corrido é IBM Plex Sans — porque o visitante precisa conseguir ler sobre você sem forçar a vista.</p>
+
+  <div class="grade g3" style="margin-top:32px">
+    <div class="janela"><div class="janela__barra janela__barra--inativa"><span class="t-barra janela__titulo">Silkscreen</span></div>
+      <div class="janela__corpo">
+        <p style="font:700 32px/1.1 Silkscreen,monospace;color:var(--breu)">Aa</p>
+        <p class="t-mini" style="margin-top:12px">Display e rótulos. Bitmap de 8px — <strong>use tamanhos múltiplos de 8</strong> (16, 24, 32, 40, 56) para pixels perfeitos. Pesos 400 e 700.</p>
+      </div>
+    </div>
+    <div class="janela"><div class="janela__barra janela__barra--inativa"><span class="t-barra janela__titulo">VT323</span></div>
+      <div class="janela__corpo">
+        <p style="font:400 40px/1 VT323,monospace;color:var(--breu)">Aa</p>
+        <p class="t-mini" style="margin-top:12px">Exclusiva do terminal CRT e de blocos de código. Fonte de fósforo real de CRT. Fora da tela verde, não aparece.</p>
+      </div>
+    </div>
+    <div class="janela"><div class="janela__barra janela__barra--inativa"><span class="t-barra janela__titulo">IBM Plex Sans</span></div>
+      <div class="janela__corpo">
+        <p style="font:600 36px/1 'IBM Plex Sans',sans-serif;color:var(--breu)">Aa</p>
+        <p class="t-mini" style="margin-top:12px">Todo texto corrido. Desenhada pela IBM para produto técnico — encaixa no mundo sem virar enfeite. Pesos 400, 500, 600.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="janela" style="margin-top:24px">
+    <div class="janela__barra"><span class="t-barra janela__titulo">escala.txt</span><span class="janela__botoes"><button class="btn-barra" aria-label="Fechar">×</button></span></div>
+    <div class="janela__corpo" style="background:var(--nebula);color:var(--osso)">
+      <div class="pilha-g">
+        <div><p class="t-etiq bruma">t-hero · Silkscreen 700 · 56px</p><p class="t-hero">Miguel Zufelatto</p></div>
+        <div><p class="t-etiq bruma">t-secao · Silkscreen 700 · 24px</p><p class="t-secao">Projetos</p></div>
+        <div><p class="t-etiq bruma">t-card · Silkscreen 700 · 16px</p><p class="t-card">Zuf's Caffè</p></div>
+        <div><p class="t-etiq bruma">t-barra · Silkscreen 400 · 12px</p><p class="t-barra">projetos.exe</p></div>
+        <div><p class="t-etiq bruma">t-etiq · Silkscreen 400 · 10px · caixa alta</p><p class="t-etiq">Habilidades</p></div>
+        <div><p class="t-etiq bruma">t-crt · VT323 · 26px</p><p class="t-crt fosforo">&gt; iniciando sessao...</p></div>
+        <div><p class="t-etiq bruma">t-corpo · IBM Plex Sans 400 · 16/1.7</p><p class="t-corpo" style="max-width:58ch">Apaixonado por tecnologia desde que me entendo por gente. Hoje, estou na jornada de transformar essa paixão em carreira.</p></div>
+        <div><p class="t-etiq bruma">t-mini · IBM Plex Sans 400 · 13/1.6</p><p class="t-mini">Landing page moderna e responsiva.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="linha-h">
+
+<!-- ═══════════ COMPONENTES ═══════════ -->
+<section class="secao" id="componentes">
+  <p class="caminho">COMPONENTES.DLL</p>
+  <h2 class="t-secao">Componentes</h2>
+  <p class="t-corpo bruma" style="max-width:60ch;margin-top:8px">Tudo no sistema nasce de um mecanismo só: o <strong>bisel de quatro camadas</strong>. Para fora = clicável ou elevado. Para dentro = campo, tela ou pressionado. É esse detalhe que separa um Win98 convincente de um retângulo cinza.</p>
+
+  <!-- bisel -->
+  <div class="grade g2" style="margin-top:32px">
+    <div class="bisel" style="padding:24px"><p class="t-card" style="color:var(--breu)">bisel para fora</p><p class="t-mini" style="color:var(--breu);margin-top:6px">Janelas, botões, barra de tarefas. Luz em cima-esquerda, breu embaixo-direita.</p></div>
+    <div class="bisel-in" style="padding:24px"><p class="t-card">bisel para dentro</p><p class="t-mini" style="margin-top:6px">Telas, inputs, botão pressionado, área de conteúdo. Invertido.</p></div>
+  </div>
+
+  <!-- janela -->
+  <h3 class="t-card" style="margin:40px 0 12px">Janela</h3>
+  <div class="grade g2">
+    <div class="janela">
+      <div class="janela__barra"><span class="t-barra janela__titulo">sobre.exe — ativa</span>
+        <span class="janela__botoes"><button class="btn-barra" aria-label="Minimizar">_</button><button class="btn-barra" aria-label="Maximizar">□</button><button class="btn-barra" aria-label="Fechar">×</button></span></div>
+      <div class="janela__corpo janela__corpo--escuro"><p class="t-corpo">Barra ativa: gradiente breu → ametista. Sombra dura de 4px, sem desfoque.</p></div>
+    </div>
+    <div class="janela">
+      <div class="janela__barra janela__barra--inativa"><span class="t-barra janela__titulo">rascunho.txt — inativa</span>
+        <span class="janela__botoes"><button class="btn-barra" aria-label="Fechar">×</button></span></div>
+      <div class="janela__corpo"><p class="t-corpo">Barra inativa: cinza-lilás. Use em cards secundários para criar hierarquia sem mudar tamanho.</p></div>
+    </div>
+  </div>
+
+  <!-- botões -->
+  <h3 class="t-card" style="margin:40px 0 12px">Botões</h3>
+  <div class="janela"><div class="janela__corpo" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+    <button class="btn btn--primario">Ver projetos</button>
+    <button class="btn">Baixar CV</button>
+    <button class="btn btn--fantasma">GitHub ↗</button>
+    <span class="t-mini" style="color:var(--breu)">Clique e segure: o bisel inverte e o rótulo desce 1px. Sem transição — o retorno é instantâneo, como era.</span>
+  </div></div>
+
+  <!-- etiquetas -->
+  <h3 class="t-card" style="margin:40px 0 12px">Etiquetas de stack</h3>
+  <div class="janela"><div class="janela__corpo">
+    <span class="etiq">HTML</span><span class="etiq">CSS</span><span class="etiq">JavaScript</span><span class="etiq">Python</span><span class="etiq">Java</span><span class="etiq">Git</span><span class="etiq">SQL</span><span class="etiq">Tailwind</span><span class="etiq--fosforo etiq">IA no desenvolvimento</span>
+    <p class="t-mini" style="color:var(--breu);margin-top:12px">Ametista para a stack toda. Fósforo reservado para o que você quer que o recrutador leia primeiro.</p>
+  </div></div>
+
+  <!-- ícones -->
+  <h3 class="t-card" style="margin:40px 0 12px">Ícones de área de trabalho — a navegação</h3>
+  <div class="janela"><div class="janela__corpo janela__corpo--escuro" style="display:flex;gap:8px;flex-wrap:wrap">
+    <a class="icone" href="#componentes">
+      <svg class="pixel" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
+        <rect x="1" y="3" width="6" height="1" fill="#8CE87C"/><rect x="1" y="4" width="14" height="9" fill="#C08BF5"/>
+        <rect x="1" y="4" width="14" height="1" fill="#EFE6FA"/><rect x="1" y="12" width="14" height="1" fill="#6E5C87"/>
+      </svg><span class="icone__rot">Sobre</span></a>
+    <a class="icone" href="#componentes">
+      <svg class="pixel" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
+        <rect x="5" y="2" width="6" height="1" fill="#EFE6FA"/><rect x="4" y="3" width="8" height="6" fill="#C08BF5"/>
+        <rect x="3" y="4" width="10" height="4" fill="#C08BF5"/><rect x="5" y="4" width="2" height="2" fill="#EFE6FA"/>
+        <rect x="6" y="9" width="4" height="1" fill="#6E5C87"/><rect x="4" y="10" width="8" height="2" fill="#B9A5D3"/>
+      </svg><span class="icone__rot">Habilidades</span></a>
+    <a class="icone" href="#componentes">
+      <svg class="pixel" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
+        <rect x="4" y="1" width="8" height="11" fill="#EDE7F5"/><rect x="3" y="3" width="10" height="9" fill="#EDE7F5"/>
+        <rect x="3" y="12" width="2" height="2" fill="#EDE7F5"/><rect x="7" y="12" width="2" height="2" fill="#EDE7F5"/>
+        <rect x="11" y="12" width="2" height="2" fill="#EDE7F5"/>
+        <rect x="5" y="5" width="2" height="2" fill="#160E24"/><rect x="9" y="5" width="2" height="2" fill="#160E24"/>
+      </svg><span class="icone__rot">Projetos</span></a>
+    <a class="icone" href="#componentes">
+      <svg class="pixel" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
+        <rect x="2" y="4" width="12" height="8" fill="#B9A5D3"/><rect x="2" y="4" width="12" height="1" fill="#EFE6FA"/>
+        <rect x="2" y="11" width="12" height="1" fill="#6E5C87"/><rect x="3" y="5" width="10" height="1" fill="#8CE87C"/>
+        <rect x="3" y="7" width="7" height="1" fill="#6E5C87"/><rect x="3" y="9" width="9" height="1" fill="#6E5C87"/>
+      </svg><span class="icone__rot">Contato</span></a>
+    <a class="icone" href="#componentes">
+      <svg class="pixel" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
+        <rect x="4" y="2" width="8" height="2" fill="#6E5C87"/><rect x="3" y="4" width="10" height="10" fill="#B9A5D3"/>
+        <rect x="3" y="4" width="1" height="10" fill="#EFE6FA"/><rect x="12" y="4" width="1" height="10" fill="#6E5C87"/>
+        <rect x="6" y="6" width="1" height="6" fill="#6E5C87"/><rect x="9" y="6" width="1" height="6" fill="#6E5C87"/>
+      </svg><span class="icone__rot">Lixeira</span></a>
+    <p class="t-mini bruma" style="align-self:center;max-width:26ch;margin-left:8px">Rótulo com sombra dura de 1px, exatamente como na referência. Hover pinta o fundo do rótulo de ametista — o "selecionado" do Windows.</p>
+  </div></div>
+
+  <!-- diálogo -->
+  <h3 class="t-card" style="margin:40px 0 12px">Caixa de diálogo</h3>
+  <div class="grade g2">
+    <div class="janela dialogo">
+      <div class="janela__barra"><span class="t-barra janela__titulo">Lembrete</span><span class="janela__botoes"><button class="btn-barra" aria-label="Fechar">×</button></span></div>
+      <div class="dialogo__conteudo">
+        <svg class="pixel" width="32" height="32" viewBox="0 0 16 16" shape-rendering="crispEdges" style="flex-shrink:0" aria-hidden="true">
+          <rect x="3" y="1" width="10" height="14" fill="#EFE6FA"/><rect x="3" y="1" width="10" height="2" fill="#8CE87C"/>
+          <rect x="5" y="5" width="6" height="1" fill="#6E5C87"/><rect x="5" y="7" width="6" height="1" fill="#6E5C87"/><rect x="5" y="9" width="4" height="1" fill="#6E5C87"/>
+        </svg>
+        <p class="t-corpo" style="color:var(--breu)">Mensagem enviada. Respondo em até dois dias.</p>
+      </div>
+      <div class="dialogo__acoes"><button class="btn">OK</button></div>
+    </div>
+    <div class="janela dialogo">
+      <div class="janela__barra"><span class="t-barra janela__titulo">Verificação</span><span class="janela__botoes"><button class="btn-barra" aria-label="Fechar">×</button></span></div>
+      <div class="dialogo__conteudo">
+        <svg class="pixel" width="32" height="32" viewBox="0 0 16 16" shape-rendering="crispEdges" style="flex-shrink:0" aria-hidden="true">
+          <rect x="2" y="8" width="2" height="2" fill="#8CE87C"/><rect x="4" y="10" width="2" height="2" fill="#8CE87C"/>
+          <rect x="6" y="8" width="2" height="2" fill="#8CE87C"/><rect x="8" y="6" width="2" height="2" fill="#8CE87C"/>
+          <rect x="10" y="4" width="2" height="2" fill="#8CE87C"/><rect x="12" y="2" width="2" height="2" fill="#8CE87C"/>
+        </svg>
+        <p class="t-corpo" style="color:var(--breu)">Nenhum erro encontrado.</p>
+      </div>
+      <div class="dialogo__acoes"><button class="btn btn--primario">Fechar</button></div>
+    </div>
+  </div>
+  <p class="nota" style="margin-top:16px">Copy em diálogo segue a regra do sistema: diz o que aconteceu e o que fazer. Sem pedir desculpas, sem ser vago. Erro de formulário: "Digite um e-mail válido." — não "Ops, algo deu errado".</p>
+
+  <!-- progresso + campo -->
+  <h3 class="t-card" style="margin:40px 0 12px">Barra de progresso e campo</h3>
+  <div class="janela"><div class="janela__corpo pilha">
+    <div>
+      <p class="t-etiq" style="color:var(--breu);margin-bottom:6px">Python</p>
+      <div class="bisel-in progresso"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="vazio"></i><i class="vazio"></i><i class="vazio"></i></div>
+    </div>
+    <div>
+      <p class="t-etiq" style="color:var(--breu);margin:12px 0 6px">Seu e-mail</p>
+      <input class="bisel-in" type="email" placeholder="voce@exemplo.com" style="width:100%;max-width:340px;border:0;padding:11px;color:var(--osso);font:400 15px/1 'IBM Plex Sans',sans-serif">
+    </div>
+    <p class="t-mini" style="color:var(--breu)">Progresso em blocos discretos, nunca uma barra contínua — barra contínua é suavizada e quebra a linguagem.</p>
+  </div></div>
+</section>
+
+<hr class="linha-h">
+
+<!-- ═══════════ ASSINATURA ═══════════ -->
+<section class="secao" id="assinatura">
+  <p class="caminho">BOOT.SYS</p>
+  <h2 class="t-secao">A assinatura</h2>
+  <p class="t-corpo bruma" style="max-width:60ch;margin-top:8px">O elemento pelo qual o site vai ser lembrado: o <strong>hero é um monitor CRT ligando</strong>. Em vez de "Miguel Zufelatto — Engenheiro de Software" escrito num h1, o nome é o resultado de um boot que roda na frente do visitante. E o gato preto senta em cima do monitor, como na referência.</p>
+
+  <div style="margin-top:32px;max-width:680px">
+    <div class="janela">
+      <div class="janela__barra"><span class="t-barra janela__titulo">zuf.os — inicializando</span>
+        <span class="janela__botoes"><button class="btn-barra" aria-label="Minimizar">_</button><button class="btn-barra" aria-label="Maximizar">□</button><button class="btn-barra" aria-label="Fechar">×</button></span></div>
+      <div style="padding:16px 16px 8px;display:flex;justify-content:center">
+        <svg class="pixel" width="72" height="63" viewBox="0 0 16 14" shape-rendering="crispEdges" aria-hidden="true">
+          <g fill="#0C0813">
+            <rect x="4" y="0" width="2" height="1"/><rect x="10" y="0" width="2" height="1"/>
+            <rect x="4" y="1" width="3" height="1"/><rect x="9" y="1" width="3" height="1"/>
+            <rect x="3" y="2" width="10" height="4"/><rect x="4" y="6" width="8" height="2"/>
+            <rect x="3" y="8" width="10" height="1"/><rect x="2" y="9" width="12" height="4"/>
+            <rect x="1" y="13" width="14" height="1"/>
+            <rect x="14" y="9" width="1" height="3"/><rect x="15" y="7" width="1" height="3"/>
+          </g>
+          <rect x="5" y="4" width="2" height="1" fill="#8CE87C"/><rect x="9" y="4" width="2" height="1" fill="#8CE87C"/>
+        </svg>
+      </div>
+      <div class="crt">
+        <p class="t-crt crt__linha">carregando perfil...</p>
+        <p class="t-crt crt__linha">MIGUEL ZUFELATTO</p>
+        <p class="t-crt crt__linha">engenheiro de software</p>
+        <p class="t-crt crt__linha">analise de dados @ fiocruz</p>
+        <p class="t-crt crt__linha">sistemas de computacao @ uff</p>
+        <p class="t-crt crt__linha">pronto<span class="cursor"></span></p>
+      </div>
+      <div class="janela__corpo" style="display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn btn--primario" href="#assinatura">Ver projetos</a>
+        <a class="btn" href="#assinatura">Falar comigo</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grade g3" style="margin-top:24px">
+    <div class="janela"><div class="janela__corpo"><p class="t-card">Digitação</p><p class="t-mini" style="margin-top:6px">Linhas aparecem em sequência, ~35ms por caractere, com pausa de 180ms entre linhas. Total abaixo de 3s.</p></div></div>
+    <div class="janela"><div class="janela__corpo"><p class="t-card">Pular</p><p class="t-mini" style="margin-top:6px">Qualquer clique, tecla ou scroll completa o boot na hora. Ninguém deve esperar o teatro duas vezes.</p></div></div>
+    <div class="janela"><div class="janela__corpo"><p class="t-card">Sem animação</p><p class="t-mini" style="margin-top:6px">Com <code>prefers-reduced-motion</code>, o texto já nasce completo. O h1 real fica no HTML desde o início, para SEO e leitor de tela.</p></div></div>
+  </div>
+</section>
+
+<hr class="linha-h">
+
+<!-- ═══════════ MALHA E MOVIMENTO ═══════════ -->
+<section class="secao" id="malha">
+  <p class="caminho">MALHA.CFG</p>
+  <h2 class="t-secao">Malha, espaçamento e movimento</h2>
+  <div class="grade g2" style="margin-top:24px">
+    <div class="janela"><div class="janela__corpo pilha">
+      <p class="t-card">Malha de 8</p>
+      <p class="t-mini">Todo espaçamento é múltiplo de 4, preferindo 8: <code>4 · 8 · 16 · 24 · 32 · 48 · 64</code>. Respiro entre seções: 64px no desktop, 48px no mobile.</p>
+      <p class="t-card" style="margin-top:8px">Bordas</p>
+      <p class="t-mini"><code>border-radius: 0</code> em absolutamente todo chrome. Bisel sempre com 2px por lado.</p>
+      <p class="t-card" style="margin-top:8px">Sombras</p>
+      <p class="t-mini">Só sombra dura: <code>4px 4px 0 rgba(12,8,19,.55)</code>. Zero blur. A exceção única é o brilho de fósforo no CRT.</p>
+      <p class="t-card" style="margin-top:8px">Largura de leitura</p>
+      <p class="t-mini">Parágrafo nunca passa de 65 caracteres. Container máximo de 1080px.</p>
+    </div></div>
+    <div class="janela"><div class="janela__corpo pilha">
+      <p class="t-card">Movimento — três momentos, só</p>
+      <p class="t-mini"><strong>1. Boot do CRT</strong> na carga da página. É a única cena orquestrada.</p>
+      <p class="t-mini"><strong>2. Abertura de janela</strong> quando a seção entra na viewport: escala de 0.96 → 1 em 140ms com <code>steps(4)</code>, para o movimento parecer serrilhado como o resto.</p>
+      <p class="t-mini"><strong>3. Piscar</strong> — cursor do terminal e o gato piscando a cada ~6s. Ambiente, não evento.</p>
+      <p class="nota" style="margin-top:8px">Nada de parallax, nada de fade-in em cascata a cada scroll. O excesso de animação é o que faz um site parecer gerado por IA — e aqui atrapalharia a leitura do trabalho.</p>
+      <p class="t-card" style="margin-top:8px">Easing</p>
+      <p class="t-mini">Sempre <code>steps()</code> ou <code>linear</code>. Curvas suaves contradizem a linguagem pixel.</p>
+    </div></div>
+  </div>
+</section>
+
+<hr class="linha-h">
+
+<!-- ═══════════ MAPA ═══════════ -->
+<section class="secao" id="mapa">
+  <p class="caminho">MAPA.INI</p>
+  <h2 class="t-secao">Como cada seção sua vira interface</h2>
+  <p class="t-corpo bruma" style="max-width:60ch;margin-top:8px">Nenhum conteúdo do seu portfólio se perde. Só muda de recipiente.</p>
+  <div class="grade g2" style="margin-top:24px">
+    <div class="janela"><div class="janela__barra janela__barra--inativa"><span class="t-barra janela__titulo">Hero</span></div><div class="janela__corpo"><p class="t-mini"><strong>Vira o monitor CRT ligando.</strong> Nome, cargo e as duas linhas sobre Fiocruz e UFF entram como saída de boot. Gato preto sentado em cima. Botão "Ver projetos" abaixo do monitor.</p></div></div>
+    <div class="janela"><div class="janela__barra janela__barra--inativa"><span class="t-barra janela__titulo">Sobre</span></div><div class="janela__corpo"><p class="t-mini"><strong>Vira uma janela <code>sobre.txt</code></strong> — bloco de notas aberto com o seu texto, em IBM Plex Sans, largura de 60ch. Ao lado, a planta e a vela da referência como enfeite de mesa.</p></div></div>
+    <div class="janela"><div class="janela__barra janela__barra--inativa"><span class="t-barra janela__titulo">Habilidades</span></div><div class="janela__corpo"><p class="t-mini"><strong>Vira o diálogo "Verificação".</strong> Suas 9 tecnologias como etiquetas dentro de uma janela, fechando com "Nenhum erro encontrado." — o aceno mais direto às imagens.</p></div></div>
+    <div class="janela"><div class="janela__barra janela__barra--inativa"><span class="t-barra janela__titulo">Projetos</span></div><div class="janela__corpo"><p class="t-mini"><strong>Cada projeto é uma janela própria</strong>, com nome na barra de título, print em bisel interno, descrição, etiquetas de stack e botão "Abrir projeto ↗". Grade de 2 colunas, empilhando no mobile.</p></div></div>
+    <div class="janela"><div class="janela__barra janela__barra--inativa"><span class="t-barra janela__titulo">Contato</span></div><div class="janela__corpo"><p class="t-mini"><strong>Vira o diálogo "Lembrete".</strong> E-mail, LinkedIn e GitHub como botões com ícone pixel. Se quiser formulário, ele cabe aqui com campos em bisel interno.</p></div></div>
+    <div class="janela"><div class="janela__barra janela__barra--inativa"><span class="t-barra janela__titulo">Navegação</span></div><div class="janela__corpo"><p class="t-mini"><strong>Nova.</strong> Coluna fixa de ícones à esquerda no desktop; no mobile, some e vira a barra de tarefas embaixo. Rodapé vira barra de tarefas com relógio ao vivo.</p></div></div>
+  </div>
+</section>
+
+<hr class="linha-h">
+
+<!-- ═══════════ TOKENS ═══════════ -->
+<section class="secao" id="tokens">
+  <p class="caminho">TOKENS.CSS</p>
+  <h2 class="t-secao">Bloco pronto para o agente</h2>
+  <div class="janela" style="margin-top:20px">
+    <div class="janela__barra"><span class="t-barra janela__titulo">tokens.css</span><span class="janela__botoes"><button class="btn-barra" aria-label="Fechar">×</button></span></div>
+    <div class="bloco-codigo">:root{
+  /* superfícies */
+  --vazio:#160E24; --nebula:#241635; --breu:#0C0813;
+  /* chrome */
+  --chrome-luz:#EFE6FA; --chrome-face:#B9A5D3; --chrome-sombra:#6E5C87;
+  /* acentos */
+  --fosforo:#8CE87C; --ametista:#C08BF5; --vela:#FFD98A;
+  /* texto */
+  --osso:#EDE7F5; --bruma:#A697BE;
+  /* malha */
+  --u:8px; --raio:0;
+}
+/* bisel para fora — janelas, botões */
+.bisel{
+  background:var(--chrome-face);
+  box-shadow:
+    inset  1px  1px 0 0 var(--chrome-luz),
+    inset -1px -1px 0 0 var(--breu),
+    inset  2px  2px 0 0 #D6C7EA,
+    inset -2px -2px 0 0 var(--chrome-sombra);
+}
+/* bisel para dentro — telas, campos, pressionado */
+.bisel-in{
+  background:var(--nebula);
+  box-shadow:
+    inset  1px  1px 0 0 var(--breu),
+    inset -1px -1px 0 0 var(--chrome-luz),
+    inset  2px  2px 0 0 var(--chrome-sombra),
+    inset -2px -2px 0 0 #D6C7EA;
+}
+
+fontes: Silkscreen 400/700 · VT323 · IBM Plex Sans 400/500/600</div>
+  </div>
+</section>
+
+<div class="centro" style="margin:64px 0 24px">
+  <p class="t-etiq bruma">Fim do documento · ZUF.OS v1.0</p>
+</div>
+
+</main>
+
+<!-- ═══════════ BARRA DE TAREFAS ═══════════ -->
+<nav class="tarefas" aria-label="Navegação do design system">
+  <a class="btn" href="#paleta" style="padding:7px 12px">◈ Paleta</a>
+  <a class="btn" href="#tipos" style="padding:7px 12px">Tipos</a>
+  <a class="btn" href="#componentes" style="padding:7px 12px">Componentes</a>
+  <a class="btn" href="#assinatura" style="padding:7px 12px">Assinatura</a>
+  <span class="tarefas__relogio" id="relogio">--:--</span>
+</nav>
+
+<script>
+(function(){
+  var el = document.getElementById('relogio');
+  function tick(){
+    var d = new Date();
+    el.textContent = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 15000);
+})();
+</script>
+</body>
+</html>
